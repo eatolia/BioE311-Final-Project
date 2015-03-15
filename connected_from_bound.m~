@@ -14,21 +14,19 @@ function [connected cluster_list numClusters] = connected_from_bound(bound)
     %iteratively searches bound matrix for cells that are connected to
     %cells that are connected to.... until all cells have been searched and
     %assigned to a cluster
-    
     for index=1:numCells
-        if unsearched(index)
-            unsearched(index)=0;
-            numClusters=numClusters+1;
-            [cluster unsearched]=find_bound(bound, index, unsearched);
-            cluster_list(cluster, numClusters)=1;
-        end
+    if unsearched(index)
+    unsearched(index)=0;
+    numClusters=numClusters+1;
+    [cluster unsearched]=find_bound(bound, index, unsearched);
+    cluster_list(cluster, numClusters)=1;
     end
-    
+    end
     %from these clusters, generate the connected matrix, by convention,
     %cells are not connected to themselves.
     for index=1:numClusters
-        a=find(cluster_list(:,index));
-        connected(a, a)=1;
+    a=find(cluster_list(:,index));
+    connected(a, a)=1;
     end
     connected=connected-eye(numCells);
 end
