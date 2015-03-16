@@ -5,8 +5,8 @@
 numSteps = 1000000;
 
 % number of yield and growth strategists for seeding the simulation
-numYS = 10; % cell type "0"
-numGS = 10; % cell type "1"
+numYS = 20; % cell type "0"
+numGS = 20; % cell type "1"
 numCells = numYS + numGS;
 initCellTypes = [zeros(1, numYS) ones(1, numGS)];
 
@@ -14,6 +14,7 @@ initCellTypes = [zeros(1, numYS) ones(1, numGS)];
 xMax = 25;
 yMax = 25;
 cellDiameter = 1;
+velocityScalingFactor = 0.01;
 
 % define grid size and initialize nutrient grid
 nutrientGridSize = 1;
@@ -21,6 +22,9 @@ nutrientGrid = zeros(xMax/nutrientGridSize, yMax/nutrientGridSize);
 
 % tracks newest ID of cells to be created (first "numCells" cells already initialized at beginning of simulation)
 nextCellID = numCells + 1;
+
+% seed random number generator
+%seed(311);
 
 %% INITIALIZE GRID/OBJECTS
 %
@@ -69,9 +73,7 @@ axis([0 xMax 0 yMax]);
 
 % start simulation
 for i=1:numSteps
-    
-    i
-    
+
     % retrieve rectangular coordinates and velocities of all active cells at start of current time step
     xPos = zeros(1, length(activeCells));
     yPos = zeros(1, length(activeCells));
@@ -82,27 +84,28 @@ for i=1:numSteps
         
         xPos(j) = activeCells(j).xCoor;
         yPos(j) = activeCells(j).yCoor;
-        xVel(j) = cos(activeCells(j).velocityAng)*activeCells(j).velocityMag;
-        yVel(j) = sin(activeCells(j).velocityAng)*activeCells(j).velocityMag;
+        xVel(j) = cos(activeCells(j).velocityAng)*activeCells(j).velocityMag*velocityScalingFactor;
+        yVel(j) = sin(activeCells(j).velocityAng)*activeCells(j).velocityMag*velocityScalingFactor;
         
     end
     
     % process cell-wall collisions
-    for j=1:length(activeCells)
-        
-        if (xPos(j) - cellDiameter/2 < 0)
-            xVel(j) = abs(xVel(j));
-        elseif (xPos(j) + cellDiameter/2 > xMax)
-            xVel(j) = -abs(xVel(j));
-        end
-        
-        if (yPos(j) - cellDiameter/2 < 0)
-            yVel(j) = abs(yVel(j));
-        elseif (yPos(j) + cellDiameter/2 > yMax)
-            yVel(j) = -abs(yVel(j));
-        end
-        
+    xWallBounce = (xPos <= cellDiameter/2) + (xPos >= (xMax - cellDiameter/2));
+    yWallBounce = (yPos <= cellDiameter/2) + (yPos >= (yMax - cellDiameter/2));
+    
+    if any(xWallBounce)
+        xVel = xVel - 2*xVel.*xWallBounce;
     end
+    
+    if any(yWallBounce)
+        yVel = yVel - 2*yVel.*yWallBounce;
+    end
+    
+    % ensure that cells don't get stuck to walls
+    xWallStuck = (xPos <= (cellDiameter/2 - abs(xVel))) + (xPos >= (xMax - cellDiameter/2 + abs(xVel)));
+    yWallStuck = (yPos <= (cellDiameter/2 - abs(yVel))) + (yPos >= (yMax - cellDiameter/2 + abs(yVel)));
+    xPos = xPos.*(1 - xWallStuck) + ceil(xPos).*(xWallStuck);
+    yPos = yPos.*(1 - yWallStuck) + ceil(yPos).*(yWallStuck);
     
     % process cell-cell collisions
     [xDist, yDist, magDist, angDist] = distances(xPos, yPos);
@@ -110,13 +113,11 @@ for i=1:numSteps
     [a b] = find(triu(collisions));
     numCollisions = length(a);
     
-    for j=1:length(activeCells)
+    for j=1:numCollisions
         
         % use rotation matrix to calculate elastic collisions, taking into account mass of clusters
         cell1 = a(j);
         cell2 = b(j);
-        m1 = 1;
-        m2 = 1;
         
         % calculate collision angle and rotate frame of reference
         collAngle = angDist(cell1, cell2);
@@ -125,8 +126,8 @@ for i=1:numSteps
         v2 = v_rot(1, 2);
         
         %adjust velocities according to elastic energy transfer
-        v_rot(1, 1) = (v1*(m1 - m2) + 2*m2*v2)/(m1 + m2);
-        v_rot(1, 2) = (v2*(m2 - m1) + 2*m1*v1)/(m1 + m2);
+        v_rot(1, 1) = v2;
+        v_rot(1, 2) = v1;
         
         %rotate back to original frame of reference
         v_new = [cos(collAngle) -sin(collAngle); sin(collAngle) cos(collAngle)]*v_rot;
@@ -142,6 +143,9 @@ for i=1:numSteps
         
         activeCells(j).xCoor = xPos(j) + xVel(j);
         activeCells(j).yCoor = yPos(j) + yVel(j);
+        
+        activeCells(j).velocityMag = sqrt(xVel(j)^2 + yVel(j)^2)/velocityScalingFactor;
+        activeCells(j).velocityAng = atan2(yVel(j), xVel(j));
 
         %activeCells(j).update_nutrients(1); % need to implement code for detecting nutrient concentration from underlying grid
         %activeCells(j).update_velocityAng();
@@ -154,6 +158,7 @@ for i=1:numSteps
     for j=1:length(activeCells)
         set(h(j), 'Position', [(activeCells(j).xCoor - cellDiameter/2) (activeCells(j).yCoor - cellDiameter/2) cellDiameter cellDiameter]);
     end
+    
     drawnow
     
 end

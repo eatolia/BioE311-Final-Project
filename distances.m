@@ -15,14 +15,14 @@ for i=1:dim
         
         xDistance(i, j) = x(i) - x(j);
         yDistance(i, j) = y(i) - y(j);
-        angle1 = normalizeAngle(atan(y(i)/x(i)));
-        angle2 = normalizeAngle(atan(y(j)/x(j)));
-        angDist(i, j) = normalizeAngle(angle2 - angle1, 0);
+        
+        angDist(i, j) = atan2(y(j), x(j)) - atan2(y(i), x(i));
         
     end
 end
 
 magDist = sqrt(xDistance.^2 + yDistance.^2);
+angDist = mod(angDist, 2*pi);
 
 end
 

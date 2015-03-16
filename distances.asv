@@ -3,18 +3,22 @@ function [ xDistance, yDistance, magDist, angDist ] = distances( x, y )
 %   Calculates distance along x-axis, distance along y-axis, total
 %   distance, and angular distance
 
-xDistance = zeros(x, y);
-yDistance = zeros(x, y);
-magDist = zeros(x, y);
-angDist = zeros(x, y);
+dim = length(x);
 
-for i=1:length(x)
-    for j=1:length(x)
+xDistance = zeros(dim, dim);
+yDistance = zeros(dim, dim);
+magDist = zeros(dim, dim);
+angDist = zeros(dim, dim);
+
+for i=1:dim
+    for j=1:dim
+        
         xDistance(i, j) = x(i) - x(j);
         yDistance(i, j) = y(i) - y(j);
-        angle1 = atan(y(i)/x(i));
-        angle2 = atan(y(j)/x(j));
-        angDist(i, j) = angle
+        
+        % should  normalize
+        angDist(i, j) = atan2(y(j), x(j)) - atan2(y(i), x(i));
+        
     end
 end
 
