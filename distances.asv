@@ -1,0 +1,24 @@
+function [ xDistance, yDistance, magDist, angDist ] = distances( x, y )
+%DISTANCES calculates pairwise distances between a set of points
+%   Calculates distance along x-axis, distance along y-axis, total
+%   distance, and angular distance
+
+xDistance = zeros(x, y);
+yDistance = zeros(x, y);
+magDist = zeros(x, y);
+angDist = zeros(x, y);
+
+for i=1:length(x)
+    for j=1:length(x)
+        xDistance(i, j) = x(i) - x(j);
+        yDistance(i, j) = y(i) - y(j);
+        angle1 = atan(y(i)/x(i));
+        angle2 = atan(y(j)/x(j));
+        angDist(i, j) = angle
+    end
+end
+
+magDist = sqrt(xDistance.^2 + yDistance.^2);
+
+end
+

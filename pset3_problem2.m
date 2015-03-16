@@ -11,19 +11,19 @@ vMax=0.01;
 bind_dist=0.1;
 
 % % 3 different k_on and k_off values now
-% k_on_bb=0.0000001;
-% k_on_br=0.001;
-% k_on_rr=0.3;
-% k_off_bb=0.3;
-% k_off_br=0.000001;
-% k_off_rr=0.000001;
+k_on_bb=0.0000001;
+k_on_br=0.001;
+k_on_rr=0.3;
+k_off_bb=0.3;
+k_off_br=0.000001;
+k_off_rr=0.000001;
 
 % % k_on and off now are matrices instead of single elements. Top left corner
 % % correspond to blue-blue interactions, bottom right corresponds to red-red,
 % % off-axis corresponds to blue-red.
-% k_on=[k_on_bb*ones(numBlue) k_on_br*ones(numBlue, numRed); k_on_br*ones(numRed, numBlue) k_on_rr*ones(numRed)];
-% k_off=[k_off_bb*ones(numBlue) k_off_br*ones(numBlue, numRed); k_off_br*ones(numRed, numBlue)
-% k_off_rr*ones(numRed)];
+k_on=[k_on_bb*ones(numBlue) k_on_br*ones(numBlue, numRed); k_on_br*ones(numRed, numBlue) k_on_rr*ones(numRed)];
+k_off=[k_off_bb*ones(numBlue) k_off_br*ones(numBlue, numRed); k_off_br*ones(numRed, numBlue)
+k_off_rr*ones(numRed)];
 
 D=1; %diameter of ball
 sim=figure(1);
@@ -49,9 +49,9 @@ vy=sin(vAng).*vMag;
 %create circles, first set are blue, the rest are red
 for index=1:numCells
     if index<=numBlue
-    h(index)=rectangle('Position',[x(index)-.5*D y(index)-.5*DDD],'Curvature',[1 1],'edgecolor','b');
+    h(index)=rectangle('Position',[x(index)-.5*D y(index)-.5*D D D],'Curvature',[1 1],'edgecolor','b');
     else
-    h(index)=rectangle('Position',[x(index)-.5*D y(index)-.5*DDD],'Curvature',[1 1],'edgecolor','r');
+    h(index)=rectangle('Position',[x(index)-.5*D y(index)-.5*D D D],'Curvature',[1 1],'edgecolor','r');
     end
 end
 
@@ -87,10 +87,10 @@ for timestep=1:numStep
     end
     
 %     % the following code ensures balls don't stick to the wall
-%     wallstuck_x=(x<=-abs(vx)) + (x>=simSize-D+abs(vx));
-%     wallstuck_y=(y<=-abs(vy)) + (y>=simSize-D+abs(vy));
-%     x=x.*(1-wallstuck_x)+round(x).*(wallstuck_x);
-%     y=y.*(1-wallstuck_y)+round(y).*(wallstuck_y);
+     wallstuck_x=(x<=-abs(vx)) + (x>=simSize-D+abs(vx));
+     wallstuck_y=(y<=-abs(vy)) + (y>=simSize-D+abs(vy));
+     x=x.*(1-wallstuck_x)+round(x).*(wallstuck_x);
+     y=y.*(1-wallstuck_y)+round(y).*(wallstuck_y);
     
     % ball-ball collisions, elastic
     [xDist, yDist, magDist, angDist]=distances(x, y);

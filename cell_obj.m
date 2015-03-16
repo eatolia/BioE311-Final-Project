@@ -16,7 +16,7 @@ classdef cell_obj
         prevSensedConc
         currSensedConc
         
-        timeStepsNutComplete % timesteps since the amount of nutrients needed to divde has been reached
+        timeStepsNotComplete % timesteps since the amount of nutrients needed to divde has been reached
     end
     
     methods
@@ -48,7 +48,7 @@ classdef cell_obj
             obj.prevSensedConc = 0;
             obj.currSensedConc = 0;
             
-            obj.timeStepsNutComplete = 0;
+            obj.timeStepsNotComplete = 0;
         end
         
         % updating the current concetration of nutrients and also keeping
@@ -79,7 +79,7 @@ classdef cell_obj
         
         % implementation of cell division
         function obj = divide_cell(obj)
-            obj.timeStepsNutComplete = 0;
+            obj.timeStepsNotComplete = 0;
             obj.nutrientsConsumed = 0;
         end
         
