@@ -7,8 +7,8 @@ clear all
 numSteps = 10000;
 
 % number of yield and growth strategists for seeding the simulation
-numYS = 10; % cell type "0"
-numGS = 10; % cell type "1"
+numYS = 1; % cell type "0"
+numGS = 0; % cell type "1"
 numCells = numYS + numGS;
 initCellTypes = [zeros(1, numYS) ones(1, numGS)];
 
@@ -28,7 +28,7 @@ nutrientGridSize = 1;
 nutrientGrid = zeros(xMax/nutrientGridSize, yMax/nutrientGridSize);
 numGridCells = size(nutrientGrid, 1)*size(nutrientGrid, 2);
 nutrientGrid(:, :) = totalStartingNutrients/numGridCells;
-nutrientConsumptionRate = 1; % should be the same as defined in object
+nutrientConsumptionRate = 0.1; % should be the same as defined in object
 
 % tracks newest ID of cells to be created (first "numCells" cells already initialized at beginning of simulation)
 nextCellID = numCells + 1;
@@ -196,6 +196,7 @@ for i=1:numSteps
                     for index=1:numCorrespondingCells
                         activeCells(closestCells{j, k}(index)).update_nutrients(nutrientGrid(j, k), nutrientConsumptionRate);
                         %activeCells(closestCells{j, k}(index)).update_velocityAng();
+                        %[nutrientGrid(j,k) nutrientConsumptionRate]
                     end
                     
                     nutrientGrid(j, k) = nutrientGrid(j, k) - neededNutrients;
@@ -242,6 +243,10 @@ for i=1:numSteps
         
         boolDivision = activeCells(j).check_division();
         boolDeath = activeCells(j).check_death();
+        
+        % diagnostic code
+        %[activeCells(j).prevSensedConc activeCells(j).currSensedConc]
+        %[activeCells(j).nutrientsConsumed activeCells(j).timeStepsNutComplete activeCells(j).age boolDivision boolDeath]
         
         if boolDeath == 1
             % remove cell from activeCells list
