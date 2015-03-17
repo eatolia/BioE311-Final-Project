@@ -150,6 +150,8 @@ for i=1:numSteps
         %activeCells(j).update_nutrients(1); % need to implement code for detecting nutrient concentration from underlying grid
         %activeCells(j).update_velocityAng();
         
+        
+        
     end
     
     % process nutrient consumption/cell divisions/death

@@ -7,10 +7,6 @@ dim = length(x);
 
 xDistance = zeros(dim, dim);
 yDistance = zeros(dim, dim);
-<<<<<<< HEAD
-magDist = zeros(dim, dim);
-=======
->>>>>>> 75910a67982bd62f51b4532644c8c042fd7c58c6
 angDist = zeros(dim, dim);
 
 for i=1:dim
@@ -28,7 +24,3 @@ magDist = sqrt(xDistance.^2 + yDistance.^2);
 angDist = mod(angDist, 2*pi);
 
 end
-<<<<<<< HEAD
-
-=======
->>>>>>> 75910a67982bd62f51b4532644c8c042fd7c58c6
