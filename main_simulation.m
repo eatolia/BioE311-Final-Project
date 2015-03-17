@@ -31,12 +31,10 @@ nextCellID = numCells + 1;
 
 % randomly generate initial positions of cells on simulation grid, then initialize cell objects in same loop
 for i=1:numCells
-    
     % sequentially place/initialize each cell--try until no collision
     placed = false;
     
     while (placed == false)
-        
         % randomly initialize positions of all particles (no wall collisions allowed)
         xPos(i) = 0.5*cellDiameter + rand()*(xMax - cellDiameter);
         yPos(i) = 0.5*cellDiameter + rand()*(yMax - cellDiameter);
@@ -45,12 +43,10 @@ for i=1:numCells
         if (sum(pdist([xPos(1:i); yPos(1:i)]') < cellDiameter) == 0)
             placed = true;
         end
-        
     end
     
     % initialize cell objects based on randomly generated initial positions
-    activeCells(i) = cell_obj(i, initCellTypes(i), xPos(i), yPos(i));
-    
+    activeCells(i) = cell_obj(i, initCellTypes(i), xPos(i), yPos(i)); 
 end
 
 % draw grid with all active cells (YS strategists blue, GS strategists red)
@@ -155,7 +151,7 @@ for i=1:numSteps
     end
     
     % process nutrient consumption/cell divisions/death
-    for j=1:length(activeCells(i))
+    for j=1:length(activeCells)
         % ***nutrient "concentration" must inputed depending on the closest
         % nutrient source. We might need to change the update_nutrient
         % function a little bit depending on how the nutrient detection is
@@ -166,26 +162,35 @@ for i=1:numSteps
         boolDeath = activeCells(j).check_death();
         if boolDeath == 1
             % remove cell from activeCells list
+            if i == 1
+                activeCells = activeCells(2:end);
+            elseif i == length(activeCells)
+                activeCells = activeCells(1:end-1);
+            else
+                activeCells = [activeCells(1:i-1) activeCells(i+1:end)];
+            end
             
         elseif boolDivision == 1
-            % randomly place cell close to 
-            placed = false;
-            while (placed == false)
+            % randomly place cell close to the original cell
+            
+%             placed = false;
+%             while (placed == false)
+% 
+%                 % randomly initialize positions of all particles (no wall collisions allowed)
+%                 newX = 0.5*cellDiameter + rand()*(xMax - cellDiameter);
+%                 newY = 0.5*cellDiameter + rand()*(yMax - cellDiameter);
+% 
+%                 % check for collisions with other particles/wall--if none, continue to next particle
+%                 if (sum(pdist([xPos(1:i); yPos(1:i)]') < cellDiameter) == 0)
+%                     placed = true;
+%                 end
+% 
+%             end
 
-                % randomly initialize positions of all particles (no wall collisions allowed)
-                newX = 0.5*cellDiameter + rand()*(xMax - cellDiameter);
-                newY = 0.5*cellDiameter + rand()*(yMax - cellDiameter);
-
-                % check for collisions with other particles/wall--if none, continue to next particle
-                if (sum(pdist([xPos(1:i); yPos(1:i)]') < cellDiameter) == 0)
-                    placed = true;
-                end
-
-            end
-            activeCells(i) = cell_obj(i, initCellTypes(i), xPos(i), yPos(i));
+            newID = length(activeCells)+1;
+            activeCells(newID) = cell_obj(newID, initCellTypes(i), xPos(i), yPos(i));
         end
     end
-    
     
     % update positions of active cells based on events of most recent time step
     for j=1:length(activeCells)
