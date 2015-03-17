@@ -16,7 +16,12 @@ classdef cell_obj
         prevSensedConc
         currSensedConc
         
+<<<<<<< HEAD
         timeStepsNotComplete % timesteps since the amount of nutrients needed to divde has been reached
+=======
+        age
+        timeStepsNutComplete % timesteps since the amount of nutrients needed to divde has been reached
+>>>>>>> 75910a67982bd62f51b4532644c8c042fd7c58c6
     end
     
     methods
@@ -58,12 +63,6 @@ classdef cell_obj
             obj.prevSensedConc = obj.currSensedConc;
             obj.currSensedConc = concentration;
             
-            if obj.nutrientsConsumed >= 1/obj.growthYield && obj.timeStepsNutComplete >= 1/obj.growthRate
-                obj = obj.divide_cell();
-            elseif obj.nutrientsConsumed >= 1/obj.growthYield && obj.timeStepsNutComplete < 1/obj.growthRate
-                obj.timeStepsNutComplete = obj.timeStepsNutComplete + 1;
-            end
-                
         end
         
         % implementation of biased random walk
@@ -81,6 +80,33 @@ classdef cell_obj
         function obj = divide_cell(obj)
             obj.timeStepsNotComplete = 0;
             obj.nutrientsConsumed = 0;
+            obj.age = 0;
+        end
+        
+        function boolDivision = check_division(obj)
+            
+            if obj.nutrientsConsumed >= 1/obj.growthYield && obj.timeStepsNutComplete >= 1/obj.growthRate
+                boolDivision = 1;
+                obj = obj.divide_cell();
+            elseif obj.nutrientsConsumed >= 1/obj.growthYield && obj.timeStepsNutComplete < 1/obj.growthRate
+                boolDivision = 0;
+                obj.timeStepsNutComplete = obj.timeStepsNutComplete + 1;
+                obj.age = obj.age + 1;
+            else
+                boolDivision = 0;
+                obj.age = obj.age + 1;
+            end
+            
+        end
+        
+        function boolDeath = check_death(obj)
+            
+            if obj.age > 1/obj.deathRate 
+                boolDeath = 1;
+            else
+                boolDeath = 0;
+            end
+            
         end
         
         
