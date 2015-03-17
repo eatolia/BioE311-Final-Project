@@ -26,14 +26,14 @@ classdef cell_obj
             obj.ID = ID;
             obj.cellType = cellType;
             
-            if cellType == 0
-                obj.growthRate = 1/5; % divides every 5 time steps 
+            if cellType == 0 % yield strategists
+                obj.growthRate = 1/10; % can divide every 10 time steps 
+                obj.growthYield = 1/5; % can divide when 5 nutrient particles have been consumed
+                obj.deathRate = 1/50; % every 50 time steps without suficient nutrients
+            elseif cellType == 1 % growth strategists
+                obj.growthRate = 1/5; % can divide every 5 time steps 
                 obj.growthYield = 1/10; % can divide when 10 nutrient particles have been consumed
-                obj.deathRate = 1/100; % every 100 time steps without suficient nutrients
-            elseif cellType == 1
-                obj.growthRate = 1/2; % divides every 5 time steps 
-                obj.growthYield = 1/5; % can divide when 10 nutrient particles have been consumed
-                obj.deathRate = 1/100; % every 100 time steps without suficient nutrients            
+                obj.deathRate = 1/50; % every 50 time steps without suficient nutrients            
             end   
             
             obj.velocityMag = 1;
@@ -55,8 +55,9 @@ classdef cell_obj
         
         % updating the current concetration of nutrients and also keeping
         % track of time till next cell division
-        function obj = update_nutrients(obj, concentration)
-            obj.nutrientsConsumed = obj.nutrientsConsumed + concentration*obj.nutrientConsumRate;
+        function obj = update_nutrients(obj, concentration, consumed)
+            %obj.nutrientsConsumed = obj.nutrientsConsumed + concentration*obj.nutrientConsumRate;
+            obj.nutrientsConsumed = obj.nutrientsConsumed + consumed;
             obj.prevSensedConc = obj.currSensedConc;
             obj.currSensedConc = concentration;
             
