@@ -28,7 +28,7 @@ nutrientGridSize = 1;
 nutrientGrid = zeros(xMax/nutrientGridSize, yMax/nutrientGridSize);
 numGridCells = size(nutrientGrid, 1)*size(nutrientGrid, 2);
 nutrientGrid(:, :) = totalStartingNutrients/numGridCells;
-nutrientConsumptionRate = 1/5; % should be the same as defined in object
+nutrientConsumptionRate = 1; % should be the same as defined in object
 
 % tracks newest ID of cells to be created (first "numCells" cells already initialized at beginning of simulation)
 nextCellID = numCells + 1;
@@ -219,20 +219,38 @@ for i=1:numSteps
     % replenish nutrients uniformly across entire grid
     nutrientGrid(:, :) = nutrientGrid(:, :) + nutrientReplenishmentRate/numGridCells;
     
-    % process nutrient consumption/cell divisions/death
-    for j=1:length(activeCells(i))
+    % process cell division/death
+    cellsToRemove = [];
+    
+    for j=1:length(activeCells)
+        
         % ***nutrient "concentration" must inputed depending on the closest
         % nutrient source. We might need to change the update_nutrient
         % function a little bit depending on how the nutrient detection is
         % implemented.***
-        activeCells(j) = update_nutrients(activeCells(j), concentration);
+        %activeCells(j) = update_nutrients(activeCells(j), concentration);
+        % MS Note: nutrient update routine was implemented in above loop.
+        % I slightly changed the update_nutrients() function to not only
+        % accepted the currently sensed concentration, but also how much
+        % the cell object consumed in that given time step.  Previously it
+        % seemed to be consuming a proportional amount of the total
+        % nutrient concentration at that grid space, so for example if the
+        % nutrient consumption rate was 1/5 then if more than 5 cells were
+        % to try to consume from that space, there would be a shortage.
+        % Not sure if that was the intended behavior but I changed it so
+        % that only a fixed amount of nutrients is consumed at each step.
         
         boolDivision = activeCells(j).check_division();
         boolDeath = activeCells(j).check_death();
+        
         if boolDeath == 1
-            % remove cell from activeCells list
+            'died'
+            % mark cell for removal later on (can't remove now otherwise it
+            % will mess up for loop iteration
+            cellsToRemove = [cellsToRemove j];
             
         elseif boolDivision == 1
+            'divided'
             % randomly place cell close to 
             placed = false;
             while (placed == false)
@@ -247,10 +265,18 @@ for i=1:numSteps
                 end
 
             end
-            activeCells(i) = cell_obj(i, initCellTypes(i), xPos(i), yPos(i));
+            
+            % place the newly divided cell and append the object to the
+            % list of active cells
+            'placed'
+            activeCells = [activeCells cell_obj(nextCellID, activeCells(j).cellType, newX, newY)];
+            nextCellID = nextCellID + 1;
+                        
         end
     end
     
+    % delete any cells marked for deletion
+    activeCells(cellsToRemove) = [];
     
     % update positions of active cells based on events of most recent time step
     figure(fig1)
