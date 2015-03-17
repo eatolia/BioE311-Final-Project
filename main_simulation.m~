@@ -164,10 +164,7 @@ for i=1:numSteps
         
         boolDivision = activeCells(j).check_division();
         boolDeath = activeCells(j).check_death();
-        if boolDeath == 1
-            % remove cell from activeCells list
-            
-        elseif boolDivision == 1
+        if boolDivision == 1
             % randomly place cell close to 
             placed = false;
             while (placed == false)
@@ -184,6 +181,11 @@ for i=1:numSteps
             end
             activeCells(i) = cell_obj(i, initCellTypes(i), xPos(i), yPos(i));
         end
+        
+        if boolDeath == 1
+            % remove cell from activeCells list
+        end
+        
     end
     
     
