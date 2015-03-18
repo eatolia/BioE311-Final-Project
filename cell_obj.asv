@@ -25,15 +25,14 @@ classdef cell_obj
         function obj = cell_obj(ID, cellType, xCoor, yCoor)
             obj.ID = ID;
             obj.cellType = cellType;
-            obj.deathRate = 1/100;
+            obj.deathRate = 1/100; % every 100 time steps without suficient nutrients            
             
             if cellType == 0 % yield strategists
-                obj.growthRate = 1/10; % can divide every 10 time steps 
-                obj.growthYield = 1/5; % can divide when 5 nutrient particles have been consumed
+                obj.growthRate = 0.1; % can divide every 10 time steps 
+                obj.growthYield = 0.06; % can divide when 5 nutrient particles have been consumed
             elseif cellType == 1 % growth strategists
                 obj.growthRate = 1/5; % can divide every 5 time steps 
-                obj.growthYield = 1/10; % can divide when 10 nutrient particles have been consumed
-                obj.deathRate = 1/100; % every 50 time steps without suficient nutrients            
+                obj.growthYield = 1/8; % can divide when 10 nutrient particles have been consumed
             end   
             
             obj.velocityMag = 1;
@@ -51,6 +50,8 @@ classdef cell_obj
             obj.currSensedConc = 0;
             
             obj.timeStepsNutComplete = 0;
+            
+            obj.age = 0;
         end
         
         % updating the current concetration of nutrients and also keeping
@@ -65,11 +66,11 @@ classdef cell_obj
         
         % implementation of biased random walk
         function obj = update_velocityAng(obj)
-            if obj.prevSensedConc >= obj.currSensedConc
+            if obj.prevSensedConc < obj.currSensedConc
                 if rand(1,1) < .2
                     obj.velocityAng = 2*pi*rand(1, 1);
                 end
-            elseif obj.prevSensedConc < obj.currSensedConc
+            elseif obj.prevSensedConc >= obj.currSensedConc
                 obj.velocityAng = 2*pi*rand(1, 1);
             end
         end
@@ -82,10 +83,10 @@ classdef cell_obj
         end
         
         function [obj, boolDivision] = check_division(obj)
-            if obj.nutrientsConsumed >= 1/obj.growthYield && obj.timeStepsNutComplete >= 1/obj.growthRate
+            if obj.nutrientsConsumed >= 1/obj.growthYield && obj.age >= 1/obj.growthRate
                 boolDivision = 1;
                 obj = obj.divide_cell();
-            elseif obj.nutrientsConsumed >= 1/obj.growthYield && obj.timeStepsNutComplete < 1/obj.growthRate
+            elseif obj.nutrientsConsumed >= 1/obj.growthYield && obj.age < 1/obj.growthRate
                 boolDivision = 0;
                 obj.timeStepsNutComplete = obj.timeStepsNutComplete + 1;
                 obj.age = obj.age + 1;
