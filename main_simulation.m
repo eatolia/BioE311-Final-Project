@@ -175,10 +175,6 @@ for i=1:numSteps
         
     end
     
-% <<<<<<< HEAD
-%     % process nutrient consumption/cell divisions/death
-%     for j=1:length(activeCells)
-% =======
     % now that we've identified which cells correspond to which nutrient grid spaces, process nutrient consumption accordingly (update nutrient grid as well as cell objects)
     for j=1:size(closestCells, 1)
         for k=1:size(closestCells, 2)
@@ -194,7 +190,7 @@ for i=1:numSteps
                 if (neededNutrients < nutrientGrid(j, k))
                     
                     for index=1:numCorrespondingCells
-                        activeCells(closestCells{j, k}(index)).update_nutrients(nutrientGrid(j, k), nutrientConsumptionRate);
+                        activeCells(closestCells{j, k}(index)) = activeCells(closestCells{j, k}(index)).update_nutrients(nutrientGrid(j, k), nutrientConsumptionRate);
                         %activeCells(closestCells{j, k}(index)).update_velocityAng();
                         %[nutrientGrid(j,k) nutrientConsumptionRate]
                     end
@@ -204,7 +200,7 @@ for i=1:numSteps
                 else
                     
                     for index=1:numCorrespondingCells
-                        activeCells(closestCells{j, k}(index)).update_nutrients(nutrientGrid(j, k), nutrientConsumptionRate*nutrientGrid(j, k)/neededNutrients);
+                        activeCells(closestCells{j, k}(index)) = activeCells(closestCells{j, k}(index)).update_nutrients(nutrientGrid(j, k), nutrientConsumptionRate*nutrientGrid(j, k)/neededNutrients);
                         %activeCells(closestCells{j, k}(index)).update_velocityAng();
                     end
                     
@@ -250,58 +246,19 @@ for i=1:numSteps
         %[activeCells(j).nutrientsConsumed activeCells(j).timeStepsNutComplete activeCells(j).age boolDivision boolDeath]
         
         if boolDeath == 1
+            
             % remove cell from activeCells list
-            if i == 1
-                activeCells = activeCells(2:end);
-            elseif i == length(activeCells)
-                activeCells = activeCells(1:end-1);
-            else
-                activeCells = [activeCells(1:i-1) activeCells(i+1:end)];
-            end
+            cellsToRemove = [cellsToRemove j];
             
         elseif boolDivision == 1
             % randomly place cell close to the original cell
-            activeCells(newID) = cell_obj(newID, initCellTypes(i), xPos(i), yPos(i));
-            newID = newID+1;
+            activeCells = [activeCells cell_obj(nextCellID, activeCells(j).cellType, activeCells(j).xCoor, activeCells(j).yCoor)];
+            nextCellID = nextCellID + 1;
         end
     end
     
-% =======
-%             'died'
-%             % mark cell for removal later on (can't remove now otherwise it
-%             % will mess up for loop iteration
-%             cellsToRemove = [cellsToRemove j];
-%             
-%         elseif boolDivision == 1
-%             'divided'
-%             % randomly place cell close to 
-%             placed = false;
-%             while (placed == false)
-% 
-%                 % randomly initialize positions of all particles (no wall collisions allowed)
-%                 newX = 0.5*cellDiameter + rand()*(xMax - cellDiameter);
-%                 newY = 0.5*cellDiameter + rand()*(yMax - cellDiameter);
-% 
-%                 % check for collisions with other particles/wall--if none, continue to next particle
-%                 if (sum(pdist([xPos(1:i); yPos(1:i)]') < cellDiameter) == 0)
-%                     placed = true;
-%                 end
-% 
-%             end
-%             
-%             % place the newly divided cell and append the object to the
-%             % list of active cells
-%             'placed'
-%             activeCells = [activeCells cell_obj(nextCellID, activeCells(j).cellType, newX, newY)];
-%             nextCellID = nextCellID + 1;
-%                         
-%         end
-%     end
-%     
-%     % delete any cells marked for deletion
-%     activeCells(cellsToRemove) = [];
-    
-% >>>>>>> 017c34bfc3292393ca8231b31328a4c0559ce9cf
+    % delete any cells marked for deletion
+    activeCells(cellsToRemove) = [];
 
     % update positions of active cells based on events of most recent time step
     figure(fig1)
