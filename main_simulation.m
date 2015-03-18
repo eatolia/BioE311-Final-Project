@@ -7,8 +7,8 @@ clear all
 numSteps = 10000;
 
 % number of yield and growth strategists for seeding the simulation
-numYS = 1; % cell type "0"
-numGS = 0; % cell type "1"
+numYS = 100; % cell type "0"
+numGS = 100; % cell type "1"
 numCells = numYS + numGS;
 initCellTypes = [zeros(1, numYS) ones(1, numGS)];
 
@@ -18,12 +18,12 @@ yMax = 25;
 cellDiameter = 1;
 
 % some variables to make the simulation more robust
-velocityScalingFactor = 0.01; % controls ratio of cell velocity to cell diameter
+velocityScalingFactor = 0.05; % controls ratio of cell velocity to cell diameter
 collisionBuffer = 1.1; % makes collisions more robust by artifically inflating cell diameter by a small percentage
 
 % define grid size and initialize nutrient grid
 totalStartingNutrients = 625*10; % this is the total amount distributed uniformly over the entire grid
-nutrientReplenishmentRate = 0.001*625; % this is the total amount that is added uniformly over the entire grid
+nutrientReplenishmentRate = 0*625; % this is the total amount that is added uniformly over the entire grid
 nutrientGridSize = 1;
 nutrientGrid = zeros(xMax/nutrientGridSize, yMax/nutrientGridSize);
 numGridCells = size(nutrientGrid, 1)*size(nutrientGrid, 2);
@@ -165,12 +165,22 @@ for i=1:numSteps
         activeCells(j).yCoor = yPos(j) + yVel(j);
         
         % code that updates velocities (circumvents random walk)
-        activeCells(j).velocityMag = sqrt(xVel(j)^2 + yVel(j)^2)/velocityScalingFactor;
-        activeCells(j).velocityAng = atan2(yVel(j), xVel(j));
+        %activeCells(j).velocityMag = sqrt(xVel(j)^2 + yVel(j)^2)/velocityScalingFactor;
+        %activeCells(j).velocityAng = atan2(yVel(j), xVel(j));
 
         % find nearest nutrient grid space (by center) to the current cell
         nearestNutrientPosX = ceil(activeCells(j).xCoor/nutrientGridSize);
         nearestNutrientPosY = ceil(activeCells(j).yCoor/nutrientGridSize);
+        if (nearestNutrientPosX > size(nutrientGrid, 1))
+            nearestNutrientPosX = 25;
+        elseif (nearestNutrientPosX < 0)
+            nearestNutrientPosX = 0;
+        end
+        if (nearestNutrientPosY > size(nutrientGrid, 2))
+            nearestNutrientPosY = 25;
+        elseif (nearestNutrientPosY < 0)
+            nearestNutrientPosY = 0;
+        end
         closestCells{nearestNutrientPosX, nearestNutrientPosY} = [closestCells{nearestNutrientPosX, nearestNutrientPosY} j];
         
     end
@@ -190,8 +200,9 @@ for i=1:numSteps
                 if (neededNutrients < nutrientGrid(j, k))
                     
                     for index=1:numCorrespondingCells
+                        
                         activeCells(closestCells{j, k}(index)) = activeCells(closestCells{j, k}(index)).update_nutrients(nutrientGrid(j, k), nutrientConsumptionRate);
-                        %activeCells(closestCells{j, k}(index)).update_velocityAng();
+                        activeCells(closestCells{j, k}(index)) = activeCells(closestCells{j, k}(index)).update_velocityAng();
                         %[nutrientGrid(j,k) nutrientConsumptionRate]
                     end
                     
@@ -201,7 +212,7 @@ for i=1:numSteps
                     
                     for index=1:numCorrespondingCells
                         activeCells(closestCells{j, k}(index)) = activeCells(closestCells{j, k}(index)).update_nutrients(nutrientGrid(j, k), nutrientConsumptionRate*nutrientGrid(j, k)/neededNutrients);
-                        %activeCells(closestCells{j, k}(index)).update_velocityAng();
+                        activeCells(closestCells{j, k}(index)) = activeCells(closestCells{j, k}(index)).update_velocityAng();
                     end
                     
                     nutrientGrid(j, k) = 0;
@@ -220,7 +231,7 @@ for i=1:numSteps
     cellsToRemove = [];
     newID = length(activeCells)+1;
     
-    for j=1:length(activeCells)
+    for j=1:length(activeCells)        
         
         % ***nutrient "concentration" must inputed depending on the closest
         % nutrient source. We might need to change the update_nutrient
@@ -257,10 +268,12 @@ for i=1:numSteps
             nextCellID = nextCellID + 1;
             
             % update plot handles based on cell type
-            if (activeCells(end).cellType == 0)
-                h = [h rectangle('Position', [(activeCells(end).xCoor - cellDiameter/2) (activeCells(end).yCoor - cellDiameter/2) cellDiameter cellDiameter], 'Curvature', [1, 1], 'edgecolor', 'b')];
-            elseif (activeCells(end).cellType == 1)
-                h = [h rectangle('Position', [(activeCells(end).xCoor - cellDiameter/2) (activeCells(end).yCoor - cellDiameter/2) cellDiameter cellDiameter], 'Curvature', [1, 1], 'edgecolor', 'r')];
+            if (activeCells(j).cellType == 0)
+                new_h = rectangle('Position', [(activeCells(end).xCoor - cellDiameter/2) (activeCells(end).yCoor - cellDiameter/2) cellDiameter cellDiameter], 'Curvature', [1, 1], 'edgecolor', 'b');
+                h(end+1) = new_h;
+            elseif (activeCells(j).cellType == 1)
+                new_h = rectangle('Position', [(activeCells(end).xCoor - cellDiameter/2) (activeCells(end).yCoor - cellDiameter/2) cellDiameter cellDiameter], 'Curvature', [1, 1], 'edgecolor', 'r');
+                h(end+1) = new_h;
             end
             
         end
@@ -268,16 +281,31 @@ for i=1:numSteps
     
     % delete any cells marked for deletion
     activeCells(cellsToRemove) = [];
-    h(cellsToRemove) = [];
+    [length(activeCells) length(h)]
 
     % update positions of active cells based on events of most recent time step
     figure(fig1)
+    clf
+    axis([0 xMax 0 yMax]);
+    title(i)
+    %for j=1:length(activeCells)
+    %    set(h(j), 'Position', [(activeCells(j).xCoor - cellDiameter/2) (activeCells(j).yCoor - cellDiameter/2) cellDiameter cellDiameter]);
+    %end
     
+    h = zeros(1, length(activeCells));
+
     for j=1:length(activeCells)
-        set(h(j), 'Position', [(activeCells(j).xCoor - cellDiameter/2) (activeCells(j).yCoor - cellDiameter/2) cellDiameter cellDiameter]);
+
+        if (activeCells(j).cellType == 0)
+            h(j) = rectangle('Position', [(activeCells(j).xCoor - cellDiameter/2) (activeCells(j).yCoor - cellDiameter/2) cellDiameter cellDiameter], 'Curvature', [1, 1], 'edgecolor', 'b');
+        elseif (activeCells(j).cellType == 1)
+            h(j) = rectangle('Position', [(activeCells(j).xCoor - cellDiameter/2) (activeCells(j).yCoor - cellDiameter/2) cellDiameter cellDiameter], 'Curvature', [1, 1], 'edgecolor', 'r');
+        end
+
     end
     
-    drawnow
+    
+    %drawnow
     title(i)
     
     % update plot of nutrient grid
