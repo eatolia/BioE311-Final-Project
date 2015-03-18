@@ -194,9 +194,8 @@ for i=1:numSteps
                 if (neededNutrients < nutrientGrid(j, k))
                     
                     for index=1:numCorrespondingCells
-                        activeCells(closestCells{j, k}(index)).update_nutrients(nutrientGrid(j, k), nutrientConsumptionRate);
+                        activeCells(closestCells{j, k}(index)) = activeCells(closestCells{j, k}(index)).update_nutrients(nutrientGrid(j, k), nutrientConsumptionRate);
                         %activeCells(closestCells{j, k}(index)).update_velocityAng();
-                        %[nutrientGrid(j,k) nutrientConsumptionRate]
                     end
                     
                     nutrientGrid(j, k) = nutrientGrid(j, k) - neededNutrients;
@@ -204,7 +203,7 @@ for i=1:numSteps
                 else
                     
                     for index=1:numCorrespondingCells
-                        activeCells(closestCells{j, k}(index)).update_nutrients(nutrientGrid(j, k), nutrientConsumptionRate*nutrientGrid(j, k)/neededNutrients);
+                        activeCells(closestCells{j, k}(index)) = activeCells(closestCells{j, k}(index)).update_nutrients(nutrientGrid(j, k), nutrientConsumptionRate*nutrientGrid(j, k)/neededNutrients);
                         %activeCells(closestCells{j, k}(index)).update_velocityAng();
                     end
                     
@@ -241,22 +240,17 @@ for i=1:numSteps
         % Not sure if that was the intended behavior but I changed it so
         % that only a fixed amount of nutrients is consumed at each step.
         
-        boolDivision = activeCells(j).check_division();
-        boolDeath = activeCells(j).check_death();
+        [activeCells(j), boolDivision] = activeCells(j).check_division();
+        [activeCells(j), boolDeath] = activeCells(j).check_death();
         
         % diagnostic code
         %[activeCells(j).prevSensedConc activeCells(j).currSensedConc]
         %[activeCells(j).nutrientsConsumed activeCells(j).timeStepsNutComplete activeCells(j).age boolDivision boolDeath]
         
         if boolDeath == 1
+            
             % remove cell from activeCells list
-            if i == 1
-                activeCells = activeCells(2:end);
-            elseif i == length(activeCells)
-                activeCells = activeCells(1:end-1);
-            else
-                activeCells = [activeCells(1:i-1) activeCells(i+1:end)];
-            end
+            cellsToRemove = [cellsToRemove j];
             
         elseif boolDivision == 1
             % randomly place cell close to the original cell
@@ -274,11 +268,15 @@ for i=1:numSteps
 %                 end
 % 
 %             end
-
-            newID = length(activeCells)+1;
-            activeCells(newID) = cell_obj(newID, initCellTypes(i), xPos(i), yPos(i));
+            
+            activeCells = [activeCells cell_obj(nextCellID, activeCells(j).cellType, activeCells(j).xCoor, activeCells(j).yCoor)];
+            nextCellID = nextCellID + 1;
+            
         end
     end
+    
+    % delete any cells marked for deletion
+    activeCells(cellsToRemove) = [];
     
 % =======
 %             'died'
