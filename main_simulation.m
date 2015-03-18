@@ -305,7 +305,7 @@ for i=1:numSteps
     end
     
     
-    %drawnow
+    drawnow
     title(i)
     
     % update plot of nutrient grid
