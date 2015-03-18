@@ -22,7 +22,7 @@ classdef cell_obj
     end
     
     methods
-        function obj = cell_obj(ID, cellType, xCoor, yCoor)
+        function obj = cell_obj(ID, cellType, xCoor, yCoor, varargin)
             obj.ID = ID;
             obj.cellType = cellType;
             
