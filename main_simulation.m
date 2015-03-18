@@ -4,11 +4,11 @@
 clear all
 
 % number of timesteps
-numSteps = 10000;
+numSteps = 1000;
 
 % number of yield and growth strategists for seeding the simulation
-numYS = 100; % cell type "0"
-numGS = 100; % cell type "1"
+numYS = 50; % cell type "0"
+numGS = 50; % cell type "1"
 numCells = numYS + numGS;
 initCellTypes = [zeros(1, numYS) ones(1, numGS)];
 
@@ -18,17 +18,27 @@ yMax = 25;
 cellDiameter = 1;
 
 % some variables to make the simulation more robust
-velocityScalingFactor = 0.05; % controls ratio of cell velocity to cell diameter
+velocityScalingFactor = 0.25; % controls ratio of cell velocity to cell diameter
 collisionBuffer = 1.1; % makes collisions more robust by artifically inflating cell diameter by a small percentage
 
 % define grid size and initialize nutrient grid
-totalStartingNutrients = 625*10; % this is the total amount distributed uniformly over the entire grid
-nutrientReplenishmentRate = 0*625; % this is the total amount that is added uniformly over the entire grid
-nutrientGridSize = 1;
+totalStartingNutrients = 625*0.01; % this is the total amount distributed uniformly over the entire grid
+nutrientReplenishmentRate = 0.025*625; % this is the total amount that is added uniformly over the entire grid
+nutrientGridSize = 0.5;
 nutrientGrid = zeros(xMax/nutrientGridSize, yMax/nutrientGridSize);
 numGridCells = size(nutrientGrid, 1)*size(nutrientGrid, 2);
-nutrientGrid(:, :) = totalStartingNutrients/numGridCells;
+nutrientGrid(:, :) = totalStartingNutrients/numGridCells/nutrientGridSize;
+%nutrientGrid(:, :) = totalStartingNutrients/numGridCells;
 nutrientConsumptionRate = 0.1; % should be the same as defined in object
+
+% to implement nutrient gradient at start of simulation
+%for j=1:size(nutrientGrid, 1)
+%    nutrientGrid(j,:) = j;
+%end
+
+% code to report populations of two species over time
+popYS = [];
+popGS = [];
 
 % tracks newest ID of cells to be created (first "numCells" cells already initialized at beginning of simulation)
 nextCellID = numCells + 1;
@@ -80,7 +90,7 @@ title('simulation grid')
 fig2 = figure()
 surf = surface(rot90(nutrientGrid)); % we flip the nutrient grid since the origin is at the top left versus the bottom left for the simulation grid
 colorbar
-axis([0 26 0 26])
+axis([0 26/nutrientGridSize 0 26/nutrientGridSize])
 title('nutrient grid')
 hold on
 
@@ -128,6 +138,7 @@ for i=1:numSteps
     collisions = (magDist <= cellDiameter*collisionBuffer).*(magDist > 0);
     [a b] = find(triu(collisions));
     numCollisions = length(a);
+    %numCollisions = 0;
     
     for j=1:numCollisions
         
@@ -172,14 +183,14 @@ for i=1:numSteps
         nearestNutrientPosX = ceil(activeCells(j).xCoor/nutrientGridSize);
         nearestNutrientPosY = ceil(activeCells(j).yCoor/nutrientGridSize);
         if (nearestNutrientPosX > size(nutrientGrid, 1))
-            nearestNutrientPosX = 25;
-        elseif (nearestNutrientPosX < 0)
-            nearestNutrientPosX = 0;
+            nearestNutrientPosX = 25/nutrientGridSize;
+        elseif (nearestNutrientPosX < 1)
+            nearestNutrientPosX = 1;
         end
         if (nearestNutrientPosY > size(nutrientGrid, 2))
-            nearestNutrientPosY = 25;
-        elseif (nearestNutrientPosY < 0)
-            nearestNutrientPosY = 0;
+            nearestNutrientPosY = 25/nutrientGridSize;
+        elseif (nearestNutrientPosY < 1)
+            nearestNutrientPosY = 1;
         end
         closestCells{nearestNutrientPosX, nearestNutrientPosY} = [closestCells{nearestNutrientPosX, nearestNutrientPosY} j];
         
@@ -281,7 +292,6 @@ for i=1:numSteps
     
     % delete any cells marked for deletion
     activeCells(cellsToRemove) = [];
-    [length(activeCells) length(h)]
 
     % update positions of active cells based on events of most recent time step
     figure(fig1)
@@ -292,18 +302,26 @@ for i=1:numSteps
     %    set(h(j), 'Position', [(activeCells(j).xCoor - cellDiameter/2) (activeCells(j).yCoor - cellDiameter/2) cellDiameter cellDiameter]);
     %end
     
+    % need code to count populations too
+    countYS = 0;
+    countGS = 0;
+    
     h = zeros(1, length(activeCells));
 
     for j=1:length(activeCells)
 
         if (activeCells(j).cellType == 0)
             h(j) = rectangle('Position', [(activeCells(j).xCoor - cellDiameter/2) (activeCells(j).yCoor - cellDiameter/2) cellDiameter cellDiameter], 'Curvature', [1, 1], 'edgecolor', 'b');
+            countYS = countYS + 1;
         elseif (activeCells(j).cellType == 1)
             h(j) = rectangle('Position', [(activeCells(j).xCoor - cellDiameter/2) (activeCells(j).yCoor - cellDiameter/2) cellDiameter cellDiameter], 'Curvature', [1, 1], 'edgecolor', 'r');
+            countGS = countGS + 1;
         end
 
     end
     
+    popYS = [popYS countYS];
+    popGS = [popGS countGS];
     
     drawnow
     title(i)
@@ -314,3 +332,8 @@ for i=1:numSteps
     surf = surface(flip(rot90(nutrientGrid, 1)));
     
 end
+
+figure()
+t = 1:600;
+plot(t, popYS, 'b', t, popGS, 'r', t, popYS + popGS, 'g')
+legend('YS (blue)', 'GS (red)', 'YS + GS')
