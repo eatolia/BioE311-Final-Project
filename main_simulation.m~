@@ -175,10 +175,10 @@ for i=1:numSteps
         
     end
     
-<<<<<<< HEAD
-    % process nutrient consumption/cell divisions/death
-    for j=1:length(activeCells)
-=======
+% <<<<<<< HEAD
+%     % process nutrient consumption/cell divisions/death
+%     for j=1:length(activeCells)
+% =======
     % now that we've identified which cells correspond to which nutrient grid spaces, process nutrient consumption accordingly (update nutrient grid as well as cell objects)
     for j=1:size(closestCells, 1)
         for k=1:size(closestCells, 2)
@@ -224,7 +224,6 @@ for i=1:numSteps
     
     for j=1:length(activeCells)
         
->>>>>>> 017c34bfc3292393ca8231b31328a4c0559ce9cf
         % ***nutrient "concentration" must inputed depending on the closest
         % nutrient source. We might need to change the update_nutrient
         % function a little bit depending on how the nutrient detection is
@@ -241,8 +240,10 @@ for i=1:numSteps
         % Not sure if that was the intended behavior but I changed it so
         % that only a fixed amount of nutrients is consumed at each step.
         
-        boolDivision = activeCells(j).check_division();
-        boolDeath = activeCells(j).check_death();
+        [activeCells(j), boolDivision] = activeCells(j).check_division();
+        [activeCells(j), boolDeath] = activeCells(j).check_death();
+        
+        newID = 
         
         if boolDeath == 1
             % remove cell from activeCells list
@@ -256,27 +257,12 @@ for i=1:numSteps
             
         elseif boolDivision == 1
             % randomly place cell close to the original cell
-            
-%             placed = false;
-%             while (placed == false)
-% 
-%                 % randomly initialize positions of all particles (no wall collisions allowed)
-%                 newX = 0.5*cellDiameter + rand()*(xMax - cellDiameter);
-%                 newY = 0.5*cellDiameter + rand()*(yMax - cellDiameter);
-% 
-%                 % check for collisions with other particles/wall--if none, continue to next particle
-%                 if (sum(pdist([xPos(1:i); yPos(1:i)]') < cellDiameter) == 0)
-%                     placed = true;
-%                 end
-% 
-%             end
-
-            newID = length(activeCells)+1;
             activeCells(newID) = cell_obj(newID, initCellTypes(i), xPos(i), yPos(i));
+            newID = newID+1;
         end
     end
     
-=======
+% =======
 %             'died'
 %             % mark cell for removal later on (can't remove now otherwise it
 %             % will mess up for loop iteration
@@ -311,7 +297,8 @@ for i=1:numSteps
 %     % delete any cells marked for deletion
 %     activeCells(cellsToRemove) = [];
     
->>>>>>> 017c34bfc3292393ca8231b31328a4c0559ce9cf
+% >>>>>>> 017c34bfc3292393ca8231b31328a4c0559ce9cf
+
     % update positions of active cells based on events of most recent time step
     figure(fig1)
     

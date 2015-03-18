@@ -81,7 +81,7 @@ classdef cell_obj
             obj.age = 0;
         end
         
-        function boolDivision = check_division(obj)
+        function [obj, boolDivision] = check_division(obj)
             if obj.nutrientsConsumed >= 1/obj.growthYield && obj.timeStepsNutComplete >= 1/obj.growthRate
                 boolDivision = 1;
                 obj = obj.divide_cell();
@@ -95,7 +95,7 @@ classdef cell_obj
             end
         end
         
-        function boolDeath = check_death(obj)
+        function [obj, boolDeath] = check_death(obj)
             if obj.age > 1/obj.deathRate 
                 boolDeath = 1;
             else

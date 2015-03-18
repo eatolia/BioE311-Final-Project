@@ -221,6 +221,7 @@ for i=1:numSteps
     
     % process cell division/death
     cellsToRemove = [];
+    newID = length(activeCells)+1;
     
     for j=1:length(activeCells)
         
@@ -240,8 +241,8 @@ for i=1:numSteps
         % Not sure if that was the intended behavior but I changed it so
         % that only a fixed amount of nutrients is consumed at each step.
         
-        boolDivision = activeCells(j).check_division();
-        boolDeath = activeCells(j).check_death();
+        [activeCells(j), boolDivision] = activeCells(j).check_division();
+        [activeCells(j), boolDeath] = activeCells(j).check_death();
         
         if boolDeath == 1
             % remove cell from activeCells list
@@ -255,23 +256,8 @@ for i=1:numSteps
             
         elseif boolDivision == 1
             % randomly place cell close to the original cell
-            
-%             placed = false;
-%             while (placed == false)
-% 
-%                 % randomly initialize positions of all particles (no wall collisions allowed)
-%                 newX = 0.5*cellDiameter + rand()*(xMax - cellDiameter);
-%                 newY = 0.5*cellDiameter + rand()*(yMax - cellDiameter);
-% 
-%                 % check for collisions with other particles/wall--if none, continue to next particle
-%                 if (sum(pdist([xPos(1:i); yPos(1:i)]') < cellDiameter) == 0)
-%                     placed = true;
-%                 end
-% 
-%             end
-
-            newID = length(activeCells)+1;
             activeCells(newID) = cell_obj(newID, initCellTypes(i), xPos(i), yPos(i));
+            newID = newID+1;
         end
     end
     
