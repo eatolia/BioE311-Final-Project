@@ -251,24 +251,17 @@ for i=1:numSteps
             cellsToRemove = [cellsToRemove j];
             
         elseif boolDivision == 1
-            
             % randomly place cell close to the original cell
             activeCells = [activeCells cell_obj(nextCellID, activeCells(j).cellType, activeCells(j).xCoor, activeCells(j).yCoor)];
             nextCellID = nextCellID + 1;
-            
-            % update plot handles based on cell type
-            if (activeCells(end).cellType == 0)
-                h = [h rectangle('Position', [(activeCells(end).xCoor - cellDiameter/2) (activeCells(end).yCoor - cellDiameter/2) cellDiameter cellDiameter], 'Curvature', [1, 1], 'edgecolor', 'b')];
-            elseif (activeCells(end).cellType == 1)
-                h = [h rectangle('Position', [(activeCells(end).xCoor - cellDiameter/2) (activeCells(end).yCoor - cellDiameter/2) cellDiameter cellDiameter], 'Curvature', [1, 1], 'edgecolor', 'r')];
-            end
-            
+            if (activeCells(end).cellType
+            h = [h rectangle('Position', [(activeCells(end).xCoor - cellDiameter/2) (activeCells(end).yCoor - cellDiameter/2) cellDiameter cellDiameter], 'Curvature', [1, 1], 'edgecolor', 'b')];
+
         end
     end
     
     % delete any cells marked for deletion
     activeCells(cellsToRemove) = [];
-    h(cellsToRemove) = [];
 
     % update positions of active cells based on events of most recent time step
     figure(fig1)
