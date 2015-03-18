@@ -6,6 +6,9 @@ clear all
 % number of timesteps
 numSteps = 1000;
 
+% figures on?
+fig_on = 0;
+
 % number of yield and growth strategists for seeding the simulation
 numYS = 50; % cell type "0"
 numGS = 50; % cell type "1"
@@ -69,31 +72,32 @@ for i=1:numCells
     activeCells(i) = cell_obj(i, initCellTypes(i), xPos(i), yPos(i)); 
 end
 
-% draw grid with all active cells (YS strategists blue, GS strategists red)
-fig1 = figure();
-h = zeros(1, length(activeCells));
+if fig_on == 1
+    % draw grid with all active cells (YS strategists blue, GS strategists red)
+    fig1 = figure();
+    h = zeros(1, length(activeCells));
 
-for i=1:length(activeCells)
-    
-    if (activeCells(i).cellType == 0)
-        h(i) = rectangle('Position', [(activeCells(i).xCoor - cellDiameter/2) (activeCells(i).yCoor - cellDiameter/2) cellDiameter cellDiameter], 'Curvature', [1, 1], 'edgecolor', 'b');
-    elseif (activeCells(i).cellType == 1)
-        h(i) = rectangle('Position', [(activeCells(i).xCoor - cellDiameter/2) (activeCells(i).yCoor - cellDiameter/2) cellDiameter cellDiameter], 'Curvature', [1, 1], 'edgecolor', 'r');
+    for i=1:length(activeCells)
+
+        if (activeCells(i).cellType == 0)
+            h(i) = rectangle('Position', [(activeCells(i).xCoor - cellDiameter/2) (activeCells(i).yCoor - cellDiameter/2) cellDiameter cellDiameter], 'Curvature', [1, 1], 'edgecolor', 'b');
+        elseif (activeCells(i).cellType == 1)
+            h(i) = rectangle('Position', [(activeCells(i).xCoor - cellDiameter/2) (activeCells(i).yCoor - cellDiameter/2) cellDiameter cellDiameter], 'Curvature', [1, 1], 'edgecolor', 'r');
+        end
+
     end
-    
+
+    axis([0 xMax 0 yMax]);
+    title('simulation grid')
+
+    % plot nutrient grid as well
+    fig2 = figure();
+    surf = surface(rot90(nutrientGrid)); % we flip the nutrient grid since the origin is at the top left versus the bottom left for the simulation grid
+    colorbar
+    axis([0 26/nutrientGridSize 0 26/nutrientGridSize])
+    title('nutrient grid')
+    hold on
 end
-
-axis([0 xMax 0 yMax]);
-title('simulation grid')
-
-% plot nutrient grid as well
-fig2 = figure()
-surf = surface(rot90(nutrientGrid)); % we flip the nutrient grid since the origin is at the top left versus the bottom left for the simulation grid
-colorbar
-axis([0 26/nutrientGridSize 0 26/nutrientGridSize])
-title('nutrient grid')
-hold on
-
 %% PROCESS SIMULATION
 %
 
@@ -278,13 +282,15 @@ for i=1:numSteps
             activeCells = [activeCells cell_obj(nextCellID, activeCells(j).cellType, activeCells(j).xCoor, activeCells(j).yCoor)];
             nextCellID = nextCellID + 1;
             
-            % update plot handles based on cell type
-            if (activeCells(j).cellType == 0)
-                new_h = rectangle('Position', [(activeCells(end).xCoor - cellDiameter/2) (activeCells(end).yCoor - cellDiameter/2) cellDiameter cellDiameter], 'Curvature', [1, 1], 'edgecolor', 'b');
-                h(end+1) = new_h;
-            elseif (activeCells(j).cellType == 1)
-                new_h = rectangle('Position', [(activeCells(end).xCoor - cellDiameter/2) (activeCells(end).yCoor - cellDiameter/2) cellDiameter cellDiameter], 'Curvature', [1, 1], 'edgecolor', 'r');
-                h(end+1) = new_h;
+            if fig_on == 1
+                % update plot handles based on cell type
+                if (activeCells(j).cellType == 0)
+                    new_h = rectangle('Position', [(activeCells(end).xCoor - cellDiameter/2) (activeCells(end).yCoor - cellDiameter/2) cellDiameter cellDiameter], 'Curvature', [1, 1], 'edgecolor', 'b');
+                    h(end+1) = new_h;
+                elseif (activeCells(j).cellType == 1)
+                    new_h = rectangle('Position', [(activeCells(end).xCoor - cellDiameter/2) (activeCells(end).yCoor - cellDiameter/2) cellDiameter cellDiameter], 'Curvature', [1, 1], 'edgecolor', 'r');
+                    h(end+1) = new_h;
+                end
             end
             
         end
@@ -292,12 +298,14 @@ for i=1:numSteps
     
     % delete any cells marked for deletion
     activeCells(cellsToRemove) = [];
-
-    % update positions of active cells based on events of most recent time step
-    figure(fig1)
-    clf
-    axis([0 xMax 0 yMax]);
-    title(i)
+    if fig_on == 1
+        % update positions of active cells based on events of most recent time step
+        figure(fig1)
+        clf
+        axis([0 xMax 0 yMax]);
+        title(i)
+    end
+    
     %for j=1:length(activeCells)
     %    set(h(j), 'Position', [(activeCells(j).xCoor - cellDiameter/2) (activeCells(j).yCoor - cellDiameter/2) cellDiameter cellDiameter]);
     %end
@@ -306,15 +314,21 @@ for i=1:numSteps
     countYS = 0;
     countGS = 0;
     
-    h = zeros(1, length(activeCells));
-
+    if fig_on == 1
+        h = zeros(1, length(activeCells));
+    end
+    
     for j=1:length(activeCells)
 
         if (activeCells(j).cellType == 0)
-            h(j) = rectangle('Position', [(activeCells(j).xCoor - cellDiameter/2) (activeCells(j).yCoor - cellDiameter/2) cellDiameter cellDiameter], 'Curvature', [1, 1], 'edgecolor', 'b');
+            if fig_on == 1
+                h(j) = rectangle('Position', [(activeCells(j).xCoor - cellDiameter/2) (activeCells(j).yCoor - cellDiameter/2) cellDiameter cellDiameter], 'Curvature', [1, 1], 'edgecolor', 'b');
+            end
             countYS = countYS + 1;
         elseif (activeCells(j).cellType == 1)
-            h(j) = rectangle('Position', [(activeCells(j).xCoor - cellDiameter/2) (activeCells(j).yCoor - cellDiameter/2) cellDiameter cellDiameter], 'Curvature', [1, 1], 'edgecolor', 'r');
+            if fig_on == 1
+                h(j) = rectangle('Position', [(activeCells(j).xCoor - cellDiameter/2) (activeCells(j).yCoor - cellDiameter/2) cellDiameter cellDiameter], 'Curvature', [1, 1], 'edgecolor', 'r');
+            end
             countGS = countGS + 1;
         end
 
@@ -323,17 +337,42 @@ for i=1:numSteps
     popYS = [popYS countYS];
     popGS = [popGS countGS];
     
-    drawnow
-    title(i)
-    
-    % update plot of nutrient grid
-    figure(fig2)
-    delete(surf);
-    surf = surface(flip(rot90(nutrientGrid, 1)));
-    
-end
+    if fig_on == 1
+        if mod(i,10) == 0
+            % update cell plot
+            figure(fig1)
+            drawnow
+            title(i)
+            print(['cell' num2str(i)],'-dpng')
 
+            % update plot of nutrient grid
+            figure(fig2)
+            delete(surf);
+            surf = surface(flip(rot90(nutrientGrid, 1)));
+            print(['grid' num2str(i)],'-dpng')
+        end
+    end
+    
+    if mod(i,10) == 0
+        i
+    end
+end
+%%
 figure()
-t = 1:600;
-plot(t, popYS, 'b', t, popGS, 'r', t, popYS + popGS, 'g')
-legend('YS (blue)', 'GS (red)', 'YS + GS')
+t = 1:numSteps;
+plot(t, popYS, 'color', [51 51 255]./255, 'linewidth', 3)
+hold all
+plot(t, popGS, 'color', [255 51 51]./255, 'linewidth', 3)
+plot(t, popYS + popGS, 'color', [102 204 0]./255, 'linewidth', 3)
+
+xlabel('Time Steps')
+ylabel('Cell Number')
+
+% title('')
+legend('YS (blue)', 'GS (red)', 'YS + GS', 'location', 'best')
+
+set(gca, 'fontsize', 16)
+set(gcf, 'color', 'w')
+
+grid on
+
